@@ -8,7 +8,11 @@ import (
 	"github.com/kristianstaffordsmith/oncall-companion/backend/internal/models"
 )
 
-const DemoUserID = "00000000-0000-0000-0000-000000000001"
+const (
+	DemoUserID      = "00000000-0000-0000-0000-000000000001"
+	SecondaryUserID = "00000000-0000-0000-0000-000000000002"
+	ManagerUserID   = "00000000-0000-0000-0000-000000000003"
+)
 
 type UsersRepo struct {
 	db *pgxpool.Pool

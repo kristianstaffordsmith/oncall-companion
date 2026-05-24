@@ -44,6 +44,13 @@ curl http://localhost:8080/me
 curl http://localhost:8080/schedule/current
 ```
 
+Trigger a demo alert and inspect it:
+
+```bash
+make test-alert
+curl http://localhost:8080/alerts
+```
+
 To reset the local database and rerun migrations:
 
 ```bash
@@ -58,7 +65,7 @@ cd backend
 DATABASE_URL="postgres://oncall:oncall@localhost:5438/oncall_companion?sslmode=disable" go run ./cmd/api
 ```
 
-Planned commands such as `make mobile`, `make generate-client`, and `make test-alert` become active in later phases.
+Planned commands such as `make mobile` and `make generate-client` become active in later phases.
 
 ## Product tradeoffs
 

@@ -33,8 +33,13 @@ func New(ctx context.Context) (*App, error) {
 
 	usersRepo := repository.NewUsersRepo(db)
 	scheduleRepo := repository.NewScheduleRepo(db)
+	alertsRepo := repository.NewAlertsRepo(db)
+	notificationsRepo := repository.NewNotificationsRepo(db)
 
 	scheduleSvc := services.NewScheduleService(scheduleRepo)
+	notificationSvc := services.NewNotificationService(notificationsRepo)
+	escalationSvc := services.NewEscalationService(alertsRepo)
+	alertSvc := services.NewAlertService(alertsRepo, escalationSvc, notificationSvc)
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -44,10 +49,15 @@ func New(ctx context.Context) (*App, error) {
 	healthHandler := handlers.NewHealthHandler()
 	meHandler := handlers.NewMeHandler(usersRepo)
 	scheduleHandler := handlers.NewScheduleHandler(scheduleSvc)
+	webhookHandler := handlers.NewWebhookHandler(alertSvc)
+	alertsHandler := handlers.NewAlertsHandler(alertSvc)
 
 	r.Get("/health", healthHandler.Get)
 	r.Get("/me", meHandler.Get)
 	r.Get("/schedule/current", scheduleHandler.Current)
+	r.Post("/webhooks/alerts", webhookHandler.ReceiveAlert)
+	r.Get("/alerts", alertsHandler.List)
+	r.Get("/alerts/{id}", alertsHandler.Get)
 
 	return &App{
 		Config: cfg,
