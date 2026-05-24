@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# expo / react native
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# go
+bin/
+*.test
+coverage.out
+
+# environment
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# local tooling
+.DS_Store
+.vscode/
+.idea/
+
+# docker / runtime
+tmp/
+*.pid
