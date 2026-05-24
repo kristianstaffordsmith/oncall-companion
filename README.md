@@ -78,6 +78,18 @@ The AI summary endpoint returns deterministic fallback output when no API key is
 
 To use OpenAI for the structured summary, add `OPENAI_API_KEY=...` to a local `.env` file in this directory before starting Docker Compose. If the provider call fails or returns invalid output, the backend falls back to deterministic output.
 
+Run the iOS-focused Expo shell:
+
+```bash
+cd mobile
+cp .env.example .env
+npm install
+npm run generate:api
+npm run ios
+```
+
+The mobile `.env` only contains public Expo configuration such as `EXPO_PUBLIC_API_URL=http://localhost:8080`. Backend secrets like `OPENAI_API_KEY` should stay in the root `.env`.
+
 To reset the local database and rerun migrations:
 
 ```bash
