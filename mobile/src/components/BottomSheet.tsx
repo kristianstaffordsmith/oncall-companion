@@ -11,6 +11,7 @@ type Props = {
   title: string;
   onClose: () => void;
   dismissable?: boolean;
+  minHeight?: number | `${number}%`;
   children: ReactNode;
 };
 
@@ -19,6 +20,7 @@ export function BottomSheet({
   title,
   onClose,
   dismissable = true,
+  minHeight,
   children,
 }: Props) {
   return (
@@ -29,7 +31,10 @@ export function BottomSheet({
       onRequestClose={dismissable ? onClose : undefined}
     >
       <Pressable style={styles.backdrop} onPress={dismissable ? onClose : undefined}>
-        <View style={styles.sheet} onStartShouldSetResponder={() => true}>
+        <View
+          style={[styles.sheet, minHeight != null ? { minHeight } : null]}
+          onStartShouldSetResponder={() => true}
+        >
           <View style={styles.handle} />
           <AppText variant="sectionTitle">{title}</AppText>
           <View style={styles.content}>{children}</View>

@@ -13,6 +13,8 @@ type Props = {
   placeholder?: string;
   editable?: boolean;
   autoFocus?: boolean;
+  multiline?: boolean;
+  numberOfLines?: number;
 };
 
 export function TextField({
@@ -22,6 +24,8 @@ export function TextField({
   placeholder,
   editable = true,
   autoFocus = false,
+  multiline = false,
+  numberOfLines = 4,
 }: Props) {
   return (
     <View style={styles.container}>
@@ -31,10 +35,18 @@ export function TextField({
       <TextInput
         autoFocus={autoFocus}
         editable={editable}
+        multiline={multiline}
+        numberOfLines={multiline ? numberOfLines : undefined}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.textMuted}
-        style={[styles.input, typography.body, !editable ? styles.inputDisabled : null]}
+        style={[
+          styles.input,
+          typography.body,
+          multiline ? styles.inputMultiline : null,
+          !editable ? styles.inputDisabled : null,
+        ]}
+        textAlignVertical={multiline ? 'top' : 'auto'}
         value={value}
       />
     </View>
@@ -61,5 +73,9 @@ const styles = StyleSheet.create({
   },
   inputDisabled: {
     opacity: 0.6,
+  },
+  inputMultiline: {
+    minHeight: 120,
+    paddingTop: spacing.md,
   },
 });

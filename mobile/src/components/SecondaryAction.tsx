@@ -6,7 +6,7 @@ import { spacing } from '@/theme/spacing';
 
 type Props = {
   label: string;
-  onPress: () => void;
+  onPress?: () => void;
   destructive?: boolean;
   disabled?: boolean;
 };
@@ -20,7 +20,7 @@ export function SecondaryAction({
   return (
     <Pressable
       disabled={disabled}
-      onPress={onPress}
+      onPress={disabled ? undefined : onPress}
       style={({ pressed }) => [styles.button, pressed && !disabled ? styles.pressed : null]}
     >
       <AppText

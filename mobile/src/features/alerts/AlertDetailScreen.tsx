@@ -31,7 +31,7 @@ export function AlertDetailScreen({ alertId }: Props) {
   if (alertQuery.isLoading) {
     return (
       <Screen>
-        <ScreenHeader title="Alert detail" />
+        <ScreenHeader title="Alert" centerTitle />
         <LoadingState message="Loading alert…" />
       </Screen>
     );
@@ -40,7 +40,7 @@ export function AlertDetailScreen({ alertId }: Props) {
   if (alertQuery.isError || !alertQuery.data) {
     return (
       <Screen>
-        <ScreenHeader title="Alert detail" />
+        <ScreenHeader title="Alert" centerTitle />
         <ErrorState message="Couldn't load this alert." onRetry={() => alertQuery.refetch()} />
       </Screen>
     );
@@ -53,7 +53,7 @@ export function AlertDetailScreen({ alertId }: Props) {
   return (
     <>
       <Screen>
-        <ScreenHeader title="Alert detail" />
+        <ScreenHeader title="Alert" centerTitle />
 
         <AlertDetailHeader alert={alert} />
 

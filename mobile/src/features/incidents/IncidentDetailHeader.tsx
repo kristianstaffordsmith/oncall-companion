@@ -7,40 +7,36 @@ import { StatusDot } from '@/components/StatusDot';
 import type { components } from '@/api/generated';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
-import { formatRelativeTime } from '@/utils/date';
-import { formatServiceLine } from '@/utils/format';
 
-type Alert = components['schemas']['Alert'];
+type Incident = components['schemas']['Incident'];
 
 type Props = {
-  alert: Alert;
+  incident: Incident;
 };
 
-export function AlertDetailHeader({ alert }: Props) {
-  const startedLabel = `started ${formatRelativeTime(alert.triggered_at)}`;
-
+export function IncidentDetailHeader({ incident }: Props) {
   return (
     <View style={styles.container}>
       <DetailMetaRow
         left={
-          <AppText variant="caption" style={styles.metadata} numberOfLines={1}>
-            {formatServiceLine(alert.service_name, alert.environment)}
+          <AppText variant="eyebrow" numberOfLines={1}>
+            {incident.reference}
           </AppText>
         }
-        right={<SeverityPill severity={alert.severity} />}
+        right={<SeverityPill severity={incident.severity} />}
       />
 
       <AppText variant="brandTitle" numberOfLines={2}>
-        {alert.title}
+        {incident.title}
       </AppText>
 
       <DetailMetaRow
         left={
           <AppText variant="caption" style={styles.metadata} numberOfLines={1}>
-            {startedLabel}
+            {incident.service_name}
           </AppText>
         }
-        right={<StatusDot kind="alert" status={alert.status} />}
+        right={<StatusDot kind="incident" status={incident.status} />}
       />
     </View>
   );

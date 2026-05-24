@@ -5,7 +5,7 @@ import { ActiveIncidentsSection } from '@/features/incidents/ActiveIncidentsSect
 export function IncidentListScreen() {
   return (
     <Screen>
-      <ScreenHeader title="Incidents" />
+      <ScreenHeader title="Incidents" centerTitle />
       <ActiveIncidentsSection />
     </Screen>
   );

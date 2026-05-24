@@ -1,6 +1,7 @@
 export { ActionRow } from './ActionRow';
 export { AlertCard } from './AlertCard';
 export { AppText } from './AppText';
+export { DetailMetaRow } from './DetailMetaRow';
 export { BottomSheet } from './BottomSheet';
 export { BrandHeader } from './BrandHeader';
 export { ConfirmDialog } from './ConfirmDialog';

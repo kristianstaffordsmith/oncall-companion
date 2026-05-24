@@ -5,7 +5,7 @@ import { ActiveAlertsSection } from '@/features/alerts/ActiveAlertsSection';
 export function AlertListScreen() {
   return (
     <Screen>
-      <ScreenHeader title="Alerts" />
+      <ScreenHeader title="Alerts" centerTitle />
       <ActiveAlertsSection />
     </Screen>
   );
