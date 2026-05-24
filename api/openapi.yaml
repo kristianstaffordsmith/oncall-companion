@@ -1,0 +1,541 @@
+openapi: 3.0.3
+info:
+  title: OnCall Companion API
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+
+  /me:
+    get:
+      summary: Get current demo user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /schedule/current:
+    get:
+      summary: Get current on-call shift
+      responses:
+        "200":
+          description: Current shift
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentShift"
+
+  /webhooks/alerts:
+    post:
+      summary: Receive alert from external monitoring system
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAlertWebhookRequest"
+      responses:
+        "201":
+          description: Created alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /notifications:
+    get:
+      summary: List unread notification events
+      responses:
+        "200":
+          description: Unread notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationEvent"
+
+  /notifications/{id}/read:
+    post:
+      summary: Mark notification as read
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Marked read
+
+  /alerts:
+    get:
+      summary: List alerts
+      responses:
+        "200":
+          description: Alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}:
+    get:
+      summary: Get alert detail
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Alert detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertDetail"
+
+  /alerts/{id}/acknowledge:
+    post:
+      summary: Acknowledge alert
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Acknowledged alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}/resolve:
+    post:
+      summary: Resolve alert
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Resolved alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}/escalate:
+    post:
+      summary: Escalate alert to secondary responder
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Escalated alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}/create-incident:
+    post:
+      summary: Create incident from alert
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIncidentFromAlertRequest"
+      responses:
+        "201":
+          description: Created incident
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentDetail"
+
+  /incidents:
+    get:
+      summary: List incidents
+      responses:
+        "200":
+          description: Incidents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Incident"
+
+  /incidents/{id}:
+    get:
+      summary: Get incident detail
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Incident detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentDetail"
+
+  /incidents/{id}/updates:
+    post:
+      summary: Add incident update
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddIncidentUpdateRequest"
+      responses:
+        "201":
+          description: Created update
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentUpdate"
+
+  /incidents/{id}/ai-summary:
+    post:
+      summary: Generate structured AI incident summary
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: AI incident summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentAISummary"
+
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Severity:
+      type: string
+      enum: [low, medium, high, critical]
+
+    AlertStatus:
+      type: string
+      enum: [triggered, acknowledged, resolved, escalated]
+
+    IncidentStatus:
+      type: string
+      enum: [investigating, fixing, monitoring, resolved]
+
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        avatar_url:
+          type: string
+          nullable: true
+        role:
+          type: string
+
+    CurrentShift:
+      type: object
+      required: [id, user, starts_at, ends_at, role]
+      properties:
+        id:
+          type: string
+          format: uuid
+        user:
+          $ref: "#/components/schemas/User"
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        role:
+          type: string
+
+    CreateAlertWebhookRequest:
+      type: object
+      required:
+        - title
+        - service_name
+        - environment
+        - severity
+        - source
+        - summary
+      properties:
+        title:
+          type: string
+        service_name:
+          type: string
+        environment:
+          type: string
+        severity:
+          $ref: "#/components/schemas/Severity"
+        source:
+          type: string
+        summary:
+          type: string
+        metric_name:
+          type: string
+        threshold:
+          type: string
+        current_value:
+          type: string
+        affected_customers:
+          type: string
+        runbook_url:
+          type: string
+        dashboard_url:
+          type: string
+        logs_url:
+          type: string
+
+    Alert:
+      type: object
+      required:
+        - id
+        - title
+        - service_name
+        - environment
+        - severity
+        - status
+        - source
+        - summary
+        - triggered_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        service_name:
+          type: string
+        environment:
+          type: string
+        severity:
+          $ref: "#/components/schemas/Severity"
+        status:
+          $ref: "#/components/schemas/AlertStatus"
+        source:
+          type: string
+        summary:
+          type: string
+        metric_name:
+          type: string
+        threshold:
+          type: string
+        current_value:
+          type: string
+        affected_customers:
+          type: string
+        runbook_url:
+          type: string
+        dashboard_url:
+          type: string
+        logs_url:
+          type: string
+        triggered_at:
+          type: string
+          format: date-time
+        acknowledged_at:
+          type: string
+          format: date-time
+          nullable: true
+        acknowledged_by:
+          type: string
+          format: uuid
+          nullable: true
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+        linked_incident_id:
+          type: string
+          format: uuid
+          nullable: true
+
+    EscalationEvent:
+      type: object
+      required: [id, alert_id, user, level, notify_at, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        alert_id:
+          type: string
+          format: uuid
+        user:
+          $ref: "#/components/schemas/User"
+        level:
+          type: integer
+        notify_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, notified, acknowledged, cancelled]
+
+    AlertDetail:
+      type: object
+      required: [alert, escalation_events]
+      properties:
+        alert:
+          $ref: "#/components/schemas/Alert"
+        escalation_events:
+          type: array
+          items:
+            $ref: "#/components/schemas/EscalationEvent"
+
+    CreateIncidentFromAlertRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        severity:
+          $ref: "#/components/schemas/Severity"
+
+    Incident:
+      type: object
+      required:
+        - id
+        - reference
+        - title
+        - service_name
+        - severity
+        - status
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        reference:
+          type: string
+        title:
+          type: string
+        service_name:
+          type: string
+        severity:
+          $ref: "#/components/schemas/Severity"
+        status:
+          $ref: "#/components/schemas/IncidentStatus"
+        created_at:
+          type: string
+          format: date-time
+
+    IncidentUpdate:
+      type: object
+      required: [id, incident_id, author_id, body, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        incident_id:
+          type: string
+          format: uuid
+        author_id:
+          type: string
+          format: uuid
+        body:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    IncidentDetail:
+      type: object
+      required: [incident, updates, linked_alerts]
+      properties:
+        incident:
+          $ref: "#/components/schemas/Incident"
+        updates:
+          type: array
+          items:
+            $ref: "#/components/schemas/IncidentUpdate"
+        linked_alerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Alert"
+
+    AddIncidentUpdateRequest:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+
+    NotificationEvent:
+      type: object
+      required: [id, user_id, title, body, status, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        alert_id:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+          enum: [unread, read]
+        created_at:
+          type: string
+          format: date-time
+
+    IncidentAISummary:
+      type: object
+      required:
+        - severity
+        - summary
+        - likely_cause
+        - suggested_actions
+        - status_page_draft
+        - slack_update_draft
+        - confidence
+      properties:
+        severity:
+          $ref: "#/components/schemas/Severity"
+        summary:
+          type: string
+        likely_cause:
+          type: string
+        suggested_actions:
+          type: array
+          items:
+            type: string
+        status_page_draft:
+          type: string
+        slack_update_draft:
+          type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
