@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/api/client';
+import type { components } from '@/api/generated';
+import { throwIfError } from '@/api/throwIfError';
 import { queryKeys } from '@/api/queryKeys';
 import { testAlertPayload } from '@/features/alerts/testAlertPayload';
 
@@ -84,6 +86,27 @@ export function useEscalateAlert(id: string) {
       queryClient.invalidateQueries({ queryKey: queryKeys.alert(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.alerts });
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
+    },
+  });
+}
+
+export function useCreateIncidentFromAlert(alertId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input?: components['schemas']['CreateIncidentFromAlertRequest']) => {
+      const { data, error, response } = await api.POST('/alerts/{id}/create-incident', {
+        params: { path: { id: alertId } },
+        body: input,
+      });
+
+      throwIfError(error, response);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.alert(alertId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alerts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.incidents });
     },
   });
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { ErrorState } from '@/components/ErrorState';
@@ -9,6 +10,7 @@ import { AlertActions } from '@/features/alerts/AlertActions';
 import { AlertContextCard } from '@/features/alerts/AlertContextCard';
 import { AlertDetailHeader } from '@/features/alerts/AlertDetailHeader';
 import { AlertLinksSection } from '@/features/alerts/AlertLinksSection';
+import { CreateIncidentSheet } from '@/features/alerts/CreateIncidentSheet';
 import { EscalationBanner } from '@/features/alerts/EscalationBanner';
 import { EscalationTimeline } from '@/features/alerts/EscalationTimeline';
 import {
@@ -23,6 +25,7 @@ type Props = {
 };
 
 export function AlertDetailScreen({ alertId }: Props) {
+  const [createIncidentVisible, setCreateIncidentVisible] = useState(false);
   const alertQuery = useAlert(alertId);
 
   if (alertQuery.isLoading) {
@@ -48,27 +51,39 @@ export function AlertDetailScreen({ alertId }: Props) {
   const showEscalationBanner = shouldShowEscalationBanner(alert, escalationEvents);
 
   return (
-    <Screen>
-      <ScreenHeader title="Alert detail" />
+    <>
+      <Screen>
+        <ScreenHeader title="Alert detail" />
 
-      <AlertDetailHeader alert={alert} />
+        <AlertDetailHeader alert={alert} />
 
-      {showEscalationBanner && nextPending ? <EscalationBanner event={nextPending} /> : null}
+        {showEscalationBanner && nextPending ? <EscalationBanner event={nextPending} /> : null}
 
-      {alert.acknowledged_at ? (
-        <AcknowledgedBanner
-          acknowledgedAt={alert.acknowledged_at}
-          acknowledgedBy={alert.acknowledged_by}
-        />
-      ) : null}
+        {alert.acknowledged_at ? (
+          <AcknowledgedBanner
+            acknowledgedAt={alert.acknowledged_at}
+            acknowledgedBy={alert.acknowledged_by}
+          />
+        ) : null}
 
-      <AlertContextCard alert={alert} />
-      <AlertLinksSection alert={alert} />
-      <EscalationTimeline alert={alert} events={escalationEvents} />
+        <AlertContextCard alert={alert} />
+        <AlertLinksSection alert={alert} />
+        <EscalationTimeline alert={alert} events={escalationEvents} />
 
-      <View style={{ gap: spacing.md }}>
-        <AlertActions alert={alert} escalationEvents={escalationEvents} />
-      </View>
-    </Screen>
+        <View style={{ gap: spacing.md }}>
+          <AlertActions
+            alert={alert}
+            escalationEvents={escalationEvents}
+            onCreateIncidentPress={() => setCreateIncidentVisible(true)}
+          />
+        </View>
+      </Screen>
+
+      <CreateIncidentSheet
+        visible={createIncidentVisible}
+        alert={alert}
+        onClose={() => setCreateIncidentVisible(false)}
+      />
+    </>
   );
 }

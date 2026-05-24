@@ -10,13 +10,25 @@ type Props = {
   visible: boolean;
   title: string;
   onClose: () => void;
+  dismissable?: boolean;
   children: ReactNode;
 };
 
-export function BottomSheet({ visible, title, onClose, children }: Props) {
+export function BottomSheet({
+  visible,
+  title,
+  onClose,
+  dismissable = true,
+  children,
+}: Props) {
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={dismissable ? onClose : undefined}
+    >
+      <Pressable style={styles.backdrop} onPress={dismissable ? onClose : undefined}>
         <View style={styles.sheet} onStartShouldSetResponder={() => true}>
           <View style={styles.handle} />
           <AppText variant="sectionTitle">{title}</AppText>

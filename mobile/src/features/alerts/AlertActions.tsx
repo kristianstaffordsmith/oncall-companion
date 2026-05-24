@@ -23,9 +23,10 @@ type EscalationEvent = components['schemas']['EscalationEvent'];
 type Props = {
   alert: Alert;
   escalationEvents: EscalationEvent[];
+  onCreateIncidentPress: () => void;
 };
 
-export function AlertActions({ alert, escalationEvents }: Props) {
+export function AlertActions({ alert, escalationEvents, onCreateIncidentPress }: Props) {
   const [resolveVisible, setResolveVisible] = useState(false);
   const [escalateVisible, setEscalateVisible] = useState(false);
 
@@ -44,7 +45,10 @@ export function AlertActions({ alert, escalationEvents }: Props) {
   const handleCreateIncident = () => {
     if (linkedIncidentId) {
       router.push(`/incidents/${linkedIncidentId}`);
+      return;
     }
+
+    onCreateIncidentPress();
   };
 
   if (isResolved) {
@@ -61,27 +65,11 @@ export function AlertActions({ alert, escalationEvents }: Props) {
 
   const createIncidentPrimary = isAcknowledged;
   const createIncidentLabel = linkedIncidentId ? 'View incident' : 'Create incident';
-  const createIncidentDisabled = !linkedIncidentId;
 
   const createIncidentAction = createIncidentPrimary ? (
-    <View style={styles.primaryBlock}>
-      <PrimaryButton
-        label={createIncidentLabel}
-        onPress={handleCreateIncident}
-        disabled={createIncidentDisabled}
-      />
-      {createIncidentDisabled ? (
-        <AppText variant="caption" style={styles.stubHint}>
-          Incident creation is coming in the next phase.
-        </AppText>
-      ) : null}
-    </View>
+    <PrimaryButton label={createIncidentLabel} onPress={handleCreateIncident} />
   ) : (
-    <SecondaryAction
-      label={createIncidentLabel}
-      onPress={handleCreateIncident}
-      disabled={createIncidentDisabled}
-    />
+    <SecondaryAction label={createIncidentLabel} onPress={handleCreateIncident} />
   );
 
   const secondaryActionError = resolveMutation.isError
@@ -175,10 +163,6 @@ const styles = StyleSheet.create({
   secondaryActions: {
     alignItems: 'center',
     gap: spacing.xs,
-  },
-  stubHint: {
-    color: colors.textMuted,
-    textAlign: 'center',
   },
   error: {
     color: colors.danger,
