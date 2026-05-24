@@ -1,12 +1,5 @@
-import { BrandHeader } from '@/components/BrandHeader';
-import { ComponentShowcase } from '@/components/ComponentShowcase';
-import { Screen } from '@/components/Screen';
+import { HomeScreen } from '@/features/home/HomeScreen';
 
-export default function HomeScreen() {
-  return (
-    <Screen>
-      <BrandHeader />
-      <ComponentShowcase />
-    </Screen>
-  );
+export default function HomeRoute() {
+  return <HomeScreen />;
 }

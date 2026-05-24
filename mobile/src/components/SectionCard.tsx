@@ -2,9 +2,7 @@ import { type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
-import { colors } from '@/theme/colors';
-import { radii } from '@/theme/radii';
-import { shadows } from '@/theme/shadows';
+import { cardStyles, getCardStyle } from '@/theme/cards';
 import { spacing } from '@/theme/spacing';
 
 type Props = {
@@ -14,7 +12,8 @@ type Props = {
 
 export function SectionCard({ title, children }: Props) {
   return (
-    <View style={styles.card}>
+    <View style={[getCardStyle('hero'), styles.card]}>
+      <View style={cardStyles.insetHighlight} pointerEvents="none" />
       {title ? <AppText variant="sectionTitle">{title}</AppText> : null}
       {children}
     </View>
@@ -24,11 +23,5 @@ export function SectionCard({ title, children }: Props) {
 const styles = StyleSheet.create({
   card: {
     gap: spacing.md,
-    padding: spacing.lg,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    ...shadows.card,
   },
 });

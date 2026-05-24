@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 import { AppText } from '@/components/AppText';
 import { Screen } from '@/components/Screen';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { SectionCard } from '@/components/SectionCard';
 import { colors } from '@/theme/colors';
 
@@ -11,6 +12,7 @@ export default function IncidentDetailRoute() {
 
   return (
     <Screen>
+      <ScreenHeader title="Incident detail" />
       <SectionCard>
         <AppText variant="eyebrow">Incident</AppText>
         <AppText variant="title">Incident detail</AppText>

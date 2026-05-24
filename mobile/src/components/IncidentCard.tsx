@@ -1,75 +1,53 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
+import { ListCard } from '@/components/ListCard';
 import { SeverityPill } from '@/components/SeverityPill';
-import { StatusPill } from '@/components/StatusPill';
+import { StatusDot } from '@/components/StatusDot';
 import { colors } from '@/theme/colors';
-import { radii } from '@/theme/radii';
 import { type Severity } from '@/theme/severity';
-import { shadows } from '@/theme/shadows';
 import { type IncidentStatus } from '@/theme/status';
-import { spacing } from '@/theme/spacing';
 
 type Props = {
-  reference: string;
   title: string;
+  metadata: string;
   severity: Severity;
   status: IncidentStatus;
-  serviceName: string;
   onPress: () => void;
 };
 
-export function IncidentCard({
-  reference,
-  title,
-  severity,
-  status,
-  serviceName,
-  onPress,
-}: Props) {
+export function IncidentCard({ title, metadata, severity, status, onPress }: Props) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
-    >
-      <AppText variant="eyebrow" style={styles.reference}>
-        {reference}
-      </AppText>
-      <AppText variant="sectionTitle">{title}</AppText>
-      <View style={styles.metaRow}>
+    <ListCard accentColor={colors.incidentBar} onPress={onPress}>
+      <View style={styles.titleRow}>
+        <AppText variant="body" style={styles.title} numberOfLines={1}>
+          {title}
+        </AppText>
         <SeverityPill severity={severity} />
-        <StatusPill kind="incident" status={status} />
       </View>
-      <AppText variant="caption" style={styles.meta}>
-        {serviceName}
+      <StatusDot kind="incident" status={status} />
+      <AppText variant="caption" style={styles.metadata} numberOfLines={1}>
+        {metadata}
       </AppText>
-    </Pressable>
+    </ListCard>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    gap: spacing.sm,
-    padding: spacing.lg,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    ...shadows.card,
-  },
-  reference: {
-    color: colors.textMuted,
-  },
-  metaRow: {
+  titleRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: spacing.sm,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
   },
-  meta: {
+  title: {
+    flex: 1,
+    color: colors.text,
+    fontWeight: '600',
+    fontSize: 17,
+    lineHeight: 22,
+  },
+  metadata: {
     color: colors.textMuted,
-  },
-  pressed: {
-    opacity: 0.92,
   },
 });

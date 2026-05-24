@@ -24,9 +24,9 @@ export function SeverityPill({ severity }: Props) {
 const styles = StyleSheet.create({
   pill: {
     alignSelf: 'flex-start',
-    paddingHorizontal: spacing.sm + 2,
-    paddingTop: spacing.xs + 3,
-    paddingBottom: spacing.xs + 1,
+    paddingHorizontal: 10,
+    paddingTop: 4,
+    paddingBottom: 4,
     borderRadius: radii.pill,
     borderWidth: 1,
   },

@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    gap: spacing.lg,
+    gap: spacing.sectionGap,
     padding: spacing.lg,
   },
 });

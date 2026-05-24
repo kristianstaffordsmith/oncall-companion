@@ -5,4 +5,8 @@ export const spacing = {
   lg: 16,
   xl: 24,
   xxl: 32,
+  cardPaddingHero: 24,
+  cardPaddingList: 20,
+  sectionGap: 24,
+  listGap: 12,
 } as const;

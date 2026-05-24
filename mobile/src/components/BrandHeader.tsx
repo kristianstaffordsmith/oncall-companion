@@ -31,10 +31,11 @@ const styles = StyleSheet.create({
     gap: 0,
   },
   logo: {
-    width: 40,
-    height: 40,
+    width: 46,
+    height: 46,
   },
   title: {
-    marginTop: 8,
+    marginTop: 7,
+    marginLeft: -4,
   },
 });

@@ -1,5 +1,7 @@
 import type { components } from '@/api/generated';
 
+import { colors } from './colors';
+
 export type AlertStatus = components['schemas']['AlertStatus'];
 export type IncidentStatus = components['schemas']['IncidentStatus'];
 
@@ -7,6 +9,12 @@ type StatusStyle = {
   fill: string;
   border: string;
   text: string;
+  label: string;
+};
+
+type StatusDotStyle = {
+  color: string;
+  halo: string;
   label: string;
 };
 
@@ -24,10 +32,32 @@ const incidentStatusStyles: Record<IncidentStatus, StatusStyle> = {
   resolved: { fill: '#8A9A9028', border: '#8A9A90', text: '#B8C4BC', label: 'Resolved' },
 };
 
+const alertStatusDotStyles: Record<AlertStatus, StatusDotStyle> = {
+  triggered: { color: '#F0C898', halo: 'rgba(240, 200, 152, 0.34)', label: 'Triggered' },
+  acknowledged: { color: '#A8DCC0', halo: 'rgba(168, 220, 192, 0.34)', label: 'Acknowledged' },
+  resolved: { color: '#B8C4BC', halo: 'rgba(184, 196, 188, 0.28)', label: 'Resolved' },
+  escalated: { color: '#F0B0C4', halo: 'rgba(240, 176, 196, 0.34)', label: 'Escalated' },
+};
+
+const incidentStatusDotStyles: Record<IncidentStatus, StatusDotStyle> = {
+  investigating: { color: '#9DD4F0', halo: 'rgba(157, 212, 240, 0.34)', label: 'Investigating' },
+  fixing: { color: '#D4B8EC', halo: 'rgba(212, 184, 236, 0.34)', label: 'Fixing' },
+  monitoring: { color: '#F8E098', halo: 'rgba(248, 224, 152, 0.34)', label: 'Monitoring' },
+  resolved: { color: '#B8C4BC', halo: 'rgba(184, 196, 188, 0.28)', label: 'Resolved' },
+};
+
 export function getAlertStatusStyle(status: AlertStatus): StatusStyle {
   return alertStatusStyles[status];
 }
 
 export function getIncidentStatusStyle(status: IncidentStatus): StatusStyle {
   return incidentStatusStyles[status];
+}
+
+export function getAlertStatusDotStyle(status: AlertStatus): StatusDotStyle {
+  return alertStatusDotStyles[status];
+}
+
+export function getIncidentStatusDotStyle(status: IncidentStatus): StatusDotStyle {
+  return incidentStatusDotStyles[status];
 }
