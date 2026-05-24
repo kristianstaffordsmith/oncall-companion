@@ -35,11 +35,13 @@ func New(ctx context.Context) (*App, error) {
 	scheduleRepo := repository.NewScheduleRepo(db)
 	alertsRepo := repository.NewAlertsRepo(db)
 	notificationsRepo := repository.NewNotificationsRepo(db)
+	incidentsRepo := repository.NewIncidentsRepo(db)
 
 	scheduleSvc := services.NewScheduleService(scheduleRepo)
 	notificationSvc := services.NewNotificationService(notificationsRepo)
 	escalationSvc := services.NewEscalationService(alertsRepo)
 	alertSvc := services.NewAlertService(alertsRepo, escalationSvc, notificationSvc)
+	incidentSvc := services.NewIncidentService(incidentsRepo, alertsRepo)
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -51,6 +53,7 @@ func New(ctx context.Context) (*App, error) {
 	scheduleHandler := handlers.NewScheduleHandler(scheduleSvc)
 	webhookHandler := handlers.NewWebhookHandler(alertSvc)
 	alertsHandler := handlers.NewAlertsHandler(alertSvc)
+	incidentsHandler := handlers.NewIncidentsHandler(incidentSvc)
 
 	r.Get("/health", healthHandler.Get)
 	r.Get("/me", meHandler.Get)
@@ -61,6 +64,10 @@ func New(ctx context.Context) (*App, error) {
 	r.Post("/alerts/{id}/acknowledge", alertsHandler.Acknowledge)
 	r.Post("/alerts/{id}/resolve", alertsHandler.Resolve)
 	r.Post("/alerts/{id}/escalate", alertsHandler.Escalate)
+	r.Post("/alerts/{id}/create-incident", incidentsHandler.CreateFromAlert)
+	r.Get("/incidents", incidentsHandler.List)
+	r.Get("/incidents/{id}", incidentsHandler.Get)
+	r.Post("/incidents/{id}/updates", incidentsHandler.AddUpdate)
 
 	return &App{
 		Config: cfg,

@@ -59,6 +59,15 @@ make resolve-alert ALERT_ID=<alert-id>
 make escalate-alert ALERT_ID=<alert-id>
 ```
 
+Create an incident from an alert and add a timeline update:
+
+```bash
+make create-incident ALERT_ID=<alert-id>
+curl http://localhost:8080/incidents
+make add-incident-update INCIDENT_ID=<incident-id>
+curl http://localhost:8080/incidents/<incident-id>
+```
+
 To reset the local database and rerun migrations:
 
 ```bash

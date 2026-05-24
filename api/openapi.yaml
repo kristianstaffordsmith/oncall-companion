@@ -425,6 +425,7 @@ components:
         - service_name
         - severity
         - status
+        - created_by
         - created_at
       properties:
         id:
@@ -440,9 +441,20 @@ components:
           $ref: "#/components/schemas/Severity"
         status:
           $ref: "#/components/schemas/IncidentStatus"
+        created_from_alert_id:
+          type: string
+          format: uuid
+          nullable: true
+        created_by:
+          type: string
+          format: uuid
         created_at:
           type: string
           format: date-time
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
 
     IncidentUpdate:
       type: object

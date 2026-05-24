@@ -425,6 +425,20 @@ func (r *AlertsRepo) MarkNextPendingEscalationNotified(ctx context.Context, q Qu
 	return event, nil
 }
 
+func (r *AlertsRepo) LinkIncident(ctx context.Context, q Queryer, alertID uuid.UUID, incidentID uuid.UUID) (bool, error) {
+	tag, err := q.Exec(ctx, `
+		UPDATE alerts
+		SET linked_incident_id = $2
+		WHERE id = $1
+			AND linked_incident_id IS NULL
+	`, alertID, incidentID)
+	if err != nil {
+		return false, err
+	}
+
+	return tag.RowsAffected() == 1, nil
+}
+
 func (r *AlertsRepo) ListEscalationEvents(ctx context.Context, alertID uuid.UUID) ([]models.EscalationEvent, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT

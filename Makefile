@@ -1,4 +1,4 @@
-.PHONY: dev api mobile generate-client reset-db test-alert acknowledge-alert resolve-alert escalate-alert
+.PHONY: dev api mobile generate-client reset-db test-alert acknowledge-alert resolve-alert escalate-alert create-incident add-incident-update
 
 dev:
 	docker compose up --build
@@ -29,3 +29,13 @@ resolve-alert:
 
 escalate-alert:
 	@curl -sS -X POST http://localhost:8080/alerts/$(ALERT_ID)/escalate
+
+create-incident:
+	@curl -sS -X POST http://localhost:8080/alerts/$(ALERT_ID)/create-incident \
+		-H "Content-Type: application/json" \
+		-d '{}'
+
+add-incident-update:
+	@curl -sS -X POST http://localhost:8080/incidents/$(INCIDENT_ID)/updates \
+		-H "Content-Type: application/json" \
+		-d '{"body":"Checking recent deploys and API error logs"}'
