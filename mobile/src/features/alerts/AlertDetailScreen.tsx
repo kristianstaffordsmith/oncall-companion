@@ -1,0 +1,74 @@
+import { View } from 'react-native';
+
+import { ErrorState } from '@/components/ErrorState';
+import { LoadingState } from '@/components/LoadingState';
+import { Screen } from '@/components/Screen';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { AcknowledgedBanner } from '@/features/alerts/AcknowledgedBanner';
+import { AlertActions } from '@/features/alerts/AlertActions';
+import { AlertContextCard } from '@/features/alerts/AlertContextCard';
+import { AlertDetailHeader } from '@/features/alerts/AlertDetailHeader';
+import { AlertLinksSection } from '@/features/alerts/AlertLinksSection';
+import { EscalationBanner } from '@/features/alerts/EscalationBanner';
+import { EscalationTimeline } from '@/features/alerts/EscalationTimeline';
+import {
+  getNextPendingEscalation,
+  shouldShowEscalationBanner,
+} from '@/features/alerts/escalation';
+import { useAlert } from '@/features/alerts/hooks';
+import { spacing } from '@/theme/spacing';
+
+type Props = {
+  alertId: string;
+};
+
+export function AlertDetailScreen({ alertId }: Props) {
+  const alertQuery = useAlert(alertId);
+
+  if (alertQuery.isLoading) {
+    return (
+      <Screen>
+        <ScreenHeader title="Alert detail" />
+        <LoadingState message="Loading alert…" />
+      </Screen>
+    );
+  }
+
+  if (alertQuery.isError || !alertQuery.data) {
+    return (
+      <Screen>
+        <ScreenHeader title="Alert detail" />
+        <ErrorState message="Couldn't load this alert." onRetry={() => alertQuery.refetch()} />
+      </Screen>
+    );
+  }
+
+  const { alert, escalation_events: escalationEvents } = alertQuery.data;
+  const nextPending = getNextPendingEscalation(escalationEvents);
+  const showEscalationBanner = shouldShowEscalationBanner(alert, escalationEvents);
+
+  return (
+    <Screen>
+      <ScreenHeader title="Alert detail" />
+
+      <AlertDetailHeader alert={alert} />
+
+      {showEscalationBanner && nextPending ? <EscalationBanner event={nextPending} /> : null}
+
+      {alert.acknowledged_at ? (
+        <AcknowledgedBanner
+          acknowledgedAt={alert.acknowledged_at}
+          acknowledgedBy={alert.acknowledged_by}
+        />
+      ) : null}
+
+      <AlertContextCard alert={alert} />
+      <AlertLinksSection alert={alert} />
+      <EscalationTimeline alert={alert} events={escalationEvents} />
+
+      <View style={{ gap: spacing.md }}>
+        <AlertActions alert={alert} escalationEvents={escalationEvents} />
+      </View>
+    </Screen>
+  );
+}
