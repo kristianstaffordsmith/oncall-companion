@@ -84,13 +84,26 @@ export function AlertActions({ alert, escalationEvents }: Props) {
     />
   );
 
+  const secondaryActionError = resolveMutation.isError
+    ? "Couldn't resolve alert. Try again."
+    : escalateMutation.isError
+      ? "Couldn't escalate alert. Try again."
+      : null;
+
   return (
     <View style={styles.container}>
       {canAcknowledge ? (
-        <AcknowledgeButton
-          onPress={() => acknowledgeMutation.mutate()}
-          loading={acknowledgeMutation.isPending}
-        />
+        <View style={styles.primaryBlock}>
+          <AcknowledgeButton
+            onPress={() => acknowledgeMutation.mutate()}
+            loading={acknowledgeMutation.isPending}
+          />
+          {acknowledgeMutation.isError ? (
+            <AppText variant="caption" style={styles.error}>
+              Couldn't acknowledge alert. Try again.
+            </AppText>
+          ) : null}
+        </View>
       ) : null}
 
       {createIncidentPrimary ? createIncidentAction : null}
@@ -142,6 +155,12 @@ export function AlertActions({ alert, escalationEvents }: Props) {
         }}
         onCancel={() => setEscalateVisible(false)}
       />
+
+      {secondaryActionError ? (
+        <AppText variant="caption" style={styles.error}>
+          {secondaryActionError}
+        </AppText>
+      ) : null}
     </View>
   );
 }
@@ -159,6 +178,10 @@ const styles = StyleSheet.create({
   },
   stubHint: {
     color: colors.textMuted,
+    textAlign: 'center',
+  },
+  error: {
+    color: colors.danger,
     textAlign: 'center',
   },
 });
