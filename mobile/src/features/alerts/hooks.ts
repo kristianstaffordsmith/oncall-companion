@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/api/client';
 import { queryKeys } from '@/api/queryKeys';
-import { testAlertPayload } from '@/features/home/testAlertPayload';
+import { testAlertPayload } from '@/features/alerts/testAlertPayload';
 
 export function useAlerts() {
   return useQuery({

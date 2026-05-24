@@ -1,20 +1,21 @@
 export function formatAlertMetadata(
   serviceName: string,
   environment: string,
-  triggeredAt?: string,
   timeAgo?: string,
 ): string {
   const parts = [serviceName, environment];
   if (timeAgo) {
     parts.push(timeAgo);
-  } else if (triggeredAt) {
-    parts.push(triggeredAt);
   }
   return parts.join(' · ');
 }
 
 export function formatIncidentMetadata(reference: string, serviceName: string): string {
   return `${reference} · ${serviceName}`;
+}
+
+export function seeAllLabel(count: number): string {
+  return count > 2 ? `See all (${count})` : 'See all';
 }
 
 export function titleCase(value: string): string {
