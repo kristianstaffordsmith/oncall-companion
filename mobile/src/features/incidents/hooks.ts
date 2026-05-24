@@ -48,3 +48,16 @@ export function useAddIncidentUpdate(id: string) {
     },
   });
 }
+
+export function useGenerateAISummary(id: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error, response } = await api.POST('/incidents/{id}/ai-summary', {
+        params: { path: { id } },
+      });
+
+      throwIfError(error, response);
+      return data;
+    },
+  });
+}

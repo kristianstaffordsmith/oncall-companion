@@ -9,4 +9,5 @@ export const spacing = {
   cardPaddingList: 20,
   sectionGap: 24,
   listGap: 12,
+  aiSheetLoadingTop: 72,
 } as const;

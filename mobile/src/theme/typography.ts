@@ -16,6 +16,11 @@ export const typography = {
     lineHeight: 28,
     fontWeight: '700',
   },
+  detailTitle: {
+    fontSize: 26,
+    lineHeight: 32,
+    fontWeight: '700',
+  },
   sectionTitle: {
     fontSize: 20,
     lineHeight: 26,
@@ -42,6 +47,16 @@ export const typography = {
     fontSize: 16,
     lineHeight: 20,
     fontWeight: '600',
+  },
+  sheetBody: {
+    fontSize: 18,
+    lineHeight: 26,
+    fontWeight: '500',
+  },
+  sheetLink: {
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: '500',
   },
   pill: {
     fontSize: 11,

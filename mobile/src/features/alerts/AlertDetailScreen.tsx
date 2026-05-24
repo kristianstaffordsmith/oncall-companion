@@ -3,8 +3,8 @@ import { View } from 'react-native';
 
 import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
+import { DetailScreenHeaderBlock } from '@/components/DetailScreenHeaderBlock';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { AcknowledgedBanner } from '@/features/alerts/AcknowledgedBanner';
 import { AlertActions } from '@/features/alerts/AlertActions';
 import { AlertContextCard } from '@/features/alerts/AlertContextCard';
@@ -31,7 +31,7 @@ export function AlertDetailScreen({ alertId }: Props) {
   if (alertQuery.isLoading) {
     return (
       <Screen>
-        <ScreenHeader title="Alert" centerTitle />
+        <DetailScreenHeaderBlock title="Alert" />
         <LoadingState message="Loading alert…" />
       </Screen>
     );
@@ -40,7 +40,7 @@ export function AlertDetailScreen({ alertId }: Props) {
   if (alertQuery.isError || !alertQuery.data) {
     return (
       <Screen>
-        <ScreenHeader title="Alert" centerTitle />
+        <DetailScreenHeaderBlock title="Alert" />
         <ErrorState message="Couldn't load this alert." onRetry={() => alertQuery.refetch()} />
       </Screen>
     );
@@ -53,9 +53,9 @@ export function AlertDetailScreen({ alertId }: Props) {
   return (
     <>
       <Screen>
-        <ScreenHeader title="Alert" centerTitle />
-
-        <AlertDetailHeader alert={alert} />
+        <DetailScreenHeaderBlock title="Alert">
+          <AlertDetailHeader alert={alert} />
+        </DetailScreenHeaderBlock>
 
         {showEscalationBanner && nextPending ? <EscalationBanner event={nextPending} /> : null}
 

@@ -1,12 +1,11 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { DetailMetaRow } from '@/components/DetailMetaRow';
+import { detailHeaderStyles } from '@/components/detailHeaderStyles';
 import { SeverityPill } from '@/components/SeverityPill';
 import { StatusDot } from '@/components/StatusDot';
 import type { components } from '@/api/generated';
-import { colors } from '@/theme/colors';
-import { spacing } from '@/theme/spacing';
 import { formatRelativeTime } from '@/utils/date';
 import { formatServiceLine } from '@/utils/format';
 
@@ -20,23 +19,23 @@ export function AlertDetailHeader({ alert }: Props) {
   const startedLabel = `started ${formatRelativeTime(alert.triggered_at)}`;
 
   return (
-    <View style={styles.container}>
+    <View style={detailHeaderStyles.container}>
       <DetailMetaRow
         left={
-          <AppText variant="caption" style={styles.metadata} numberOfLines={1}>
+          <AppText variant="caption" style={detailHeaderStyles.metadata} numberOfLines={1}>
             {formatServiceLine(alert.service_name, alert.environment)}
           </AppText>
         }
         right={<SeverityPill severity={alert.severity} />}
       />
 
-      <AppText variant="brandTitle" numberOfLines={2}>
+      <AppText variant="detailTitle" style={detailHeaderStyles.title} numberOfLines={2}>
         {alert.title}
       </AppText>
 
       <DetailMetaRow
         left={
-          <AppText variant="caption" style={styles.metadata} numberOfLines={1}>
+          <AppText variant="caption" style={detailHeaderStyles.metadata} numberOfLines={1}>
             {startedLabel}
           </AppText>
         }
@@ -45,12 +44,3 @@ export function AlertDetailHeader({ alert }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.sm,
-  },
-  metadata: {
-    color: colors.textMuted,
-  },
-});

@@ -3,9 +3,11 @@ import { View } from 'react-native';
 
 import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
+import { DetailScreenHeaderBlock } from '@/components/DetailScreenHeaderBlock';
 import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { AddUpdateSheet } from '@/features/incidents/AddUpdateSheet';
+import { AISummarySheet } from '@/features/incidents/AISummarySheet';
+import { AskAICard } from '@/features/incidents/AskAICard';
 import { IncidentActions } from '@/features/incidents/IncidentActions';
 import { IncidentDetailHeader } from '@/features/incidents/IncidentDetailHeader';
 import { IncidentRespondersSection } from '@/features/incidents/IncidentRespondersSection';
@@ -20,12 +22,13 @@ type Props = {
 
 export function IncidentDetailScreen({ incidentId }: Props) {
   const [addUpdateVisible, setAddUpdateVisible] = useState(false);
+  const [summaryVisible, setSummaryVisible] = useState(false);
   const incidentQuery = useIncident(incidentId);
 
   if (incidentQuery.isLoading) {
     return (
       <Screen>
-        <ScreenHeader title="Incident" centerTitle />
+        <DetailScreenHeaderBlock title="Incident" />
         <LoadingState message="Loading incident…" />
       </Screen>
     );
@@ -34,7 +37,7 @@ export function IncidentDetailScreen({ incidentId }: Props) {
   if (incidentQuery.isError || !incidentQuery.data) {
     return (
       <Screen>
-        <ScreenHeader title="Incident" centerTitle />
+        <DetailScreenHeaderBlock title="Incident" />
         <ErrorState
           message="Couldn't load this incident."
           onRetry={() => incidentQuery.refetch()}
@@ -48,9 +51,10 @@ export function IncidentDetailScreen({ incidentId }: Props) {
   return (
     <>
       <Screen>
-        <ScreenHeader title="Incident" centerTitle />
-
-        <IncidentDetailHeader incident={incident} />
+        <DetailScreenHeaderBlock title="Incident">
+          <IncidentDetailHeader incident={incident} />
+        </DetailScreenHeaderBlock>
+        <AskAICard onPress={() => setSummaryVisible(true)} disabled={summaryVisible} />
         <IncidentRespondersSection createdBy={incident.created_by} />
         <LinkedAlertsSection alerts={linkedAlerts} />
         <IncidentTimeline incident={incident} linkedAlerts={linkedAlerts} updates={updates} />
@@ -64,6 +68,12 @@ export function IncidentDetailScreen({ incidentId }: Props) {
         visible={addUpdateVisible}
         incidentId={incidentId}
         onClose={() => setAddUpdateVisible(false)}
+      />
+
+      <AISummarySheet
+        visible={summaryVisible}
+        incidentId={incidentId}
+        onClose={() => setSummaryVisible(false)}
       />
     </>
   );
