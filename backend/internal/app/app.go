@@ -42,6 +42,9 @@ func New(ctx context.Context) (*App, error) {
 	escalationSvc := services.NewEscalationService(alertsRepo)
 	alertSvc := services.NewAlertService(alertsRepo, escalationSvc, notificationSvc)
 	incidentSvc := services.NewIncidentService(incidentsRepo, alertsRepo)
+	aiSvc := services.NewAIService(services.AIConfig{
+		OpenAIKey: cfg.OpenAIKey,
+	})
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -53,7 +56,7 @@ func New(ctx context.Context) (*App, error) {
 	scheduleHandler := handlers.NewScheduleHandler(scheduleSvc)
 	webhookHandler := handlers.NewWebhookHandler(alertSvc)
 	alertsHandler := handlers.NewAlertsHandler(alertSvc)
-	incidentsHandler := handlers.NewIncidentsHandler(incidentSvc)
+	incidentsHandler := handlers.NewIncidentsHandler(incidentSvc, aiSvc)
 
 	r.Get("/health", healthHandler.Get)
 	r.Get("/me", meHandler.Get)
@@ -68,6 +71,7 @@ func New(ctx context.Context) (*App, error) {
 	r.Get("/incidents", incidentsHandler.List)
 	r.Get("/incidents/{id}", incidentsHandler.Get)
 	r.Post("/incidents/{id}/updates", incidentsHandler.AddUpdate)
+	r.Post("/incidents/{id}/ai-summary", incidentsHandler.GenerateAISummary)
 
 	return &App{
 		Config: cfg,

@@ -68,6 +68,16 @@ make add-incident-update INCIDENT_ID=<incident-id>
 curl http://localhost:8080/incidents/<incident-id>
 ```
 
+Generate a structured incident summary:
+
+```bash
+make generate-ai-summary INCIDENT_ID=<incident-id>
+```
+
+The AI summary endpoint returns deterministic fallback output when no API key is configured, so the demo works locally without provider setup.
+
+To use OpenAI for the structured summary, add `OPENAI_API_KEY=...` to a local `.env` file in this directory before starting Docker Compose. If the provider call fails or returns invalid output, the backend falls back to deterministic output.
+
 To reset the local database and rerun migrations:
 
 ```bash

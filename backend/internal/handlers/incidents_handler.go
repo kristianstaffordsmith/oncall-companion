@@ -12,10 +12,14 @@ import (
 
 type IncidentsHandler struct {
 	incidentSvc *services.IncidentService
+	aiSvc       *services.AIService
 }
 
-func NewIncidentsHandler(incidentSvc *services.IncidentService) *IncidentsHandler {
-	return &IncidentsHandler{incidentSvc: incidentSvc}
+func NewIncidentsHandler(incidentSvc *services.IncidentService, aiSvc *services.AIService) *IncidentsHandler {
+	return &IncidentsHandler{
+		incidentSvc: incidentSvc,
+		aiSvc:       aiSvc,
+	}
 }
 
 type createIncidentFromAlertRequest struct {
@@ -102,6 +106,28 @@ func (h *IncidentsHandler) AddUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpjson.WriteJSON(w, http.StatusCreated, update)
+}
+
+func (h *IncidentsHandler) GenerateAISummary(w http.ResponseWriter, r *http.Request) {
+	incidentID, err := incidentIDParam(r)
+	if err != nil {
+		httpjson.WriteError(w, http.StatusBadRequest, "invalid incident id")
+		return
+	}
+
+	incidentDetail, err := h.incidentSvc.GetDetail(r.Context(), incidentID)
+	if err != nil {
+		writeIncidentError(w, err, "failed to load incident")
+		return
+	}
+
+	summary, err := h.aiSvc.GenerateIncidentSummary(r.Context(), incidentDetail)
+	if err != nil {
+		httpjson.WriteError(w, http.StatusInternalServerError, "failed to generate incident summary")
+		return
+	}
+
+	httpjson.WriteJSON(w, http.StatusOK, summary)
 }
 
 func incidentIDParam(r *http.Request) (uuid.UUID, error) {
