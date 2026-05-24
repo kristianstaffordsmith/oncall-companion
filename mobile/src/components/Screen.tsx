@@ -16,7 +16,12 @@ export function Screen({ children, scroll = true }: Props) {
   return (
     <SafeAreaView style={styles.safeArea}>
       {scroll ? (
-        <ScrollView contentContainerStyle={styles.scrollContent}>{content}</ScrollView>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {content}
+        </ScrollView>
       ) : (
         content
       )}
@@ -31,6 +36,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: spacing.xxl,
   },
   content: {
     flex: 1,
