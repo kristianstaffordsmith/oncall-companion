@@ -28,25 +28,34 @@ Webhook
 
 ## Running locally
 
-The repo is being built in phases. The backend health endpoint is the first runnable slice.
+The repo is being built in phases. The backend health, current user, and current schedule endpoints are the first runnable slice.
 
-Run the API locally:
+Run the API with Docker Compose:
 
 ```bash
-cd backend
-go run ./cmd/api
+docker compose up --build
 ```
 
-Check the health endpoint:
+Check the endpoints:
 
 ```bash
 curl http://localhost:8080/health
+curl http://localhost:8080/me
+curl http://localhost:8080/schedule/current
 ```
 
-Or run it with Docker Compose:
+To reset the local database and rerun migrations:
 
 ```bash
-make dev
+docker compose down -v
+docker compose up --build
+```
+
+You can also run the API locally if Postgres is already running:
+
+```bash
+cd backend
+DATABASE_URL="postgres://oncall:oncall@localhost:5438/oncall_companion?sslmode=disable" go run ./cmd/api
 ```
 
 Planned commands such as `make mobile`, `make generate-client`, and `make test-alert` become active in later phases.
