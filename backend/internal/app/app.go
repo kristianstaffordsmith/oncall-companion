@@ -58,6 +58,9 @@ func New(ctx context.Context) (*App, error) {
 	r.Post("/webhooks/alerts", webhookHandler.ReceiveAlert)
 	r.Get("/alerts", alertsHandler.List)
 	r.Get("/alerts/{id}", alertsHandler.Get)
+	r.Post("/alerts/{id}/acknowledge", alertsHandler.Acknowledge)
+	r.Post("/alerts/{id}/resolve", alertsHandler.Resolve)
+	r.Post("/alerts/{id}/escalate", alertsHandler.Escalate)
 
 	return &App{
 		Config: cfg,

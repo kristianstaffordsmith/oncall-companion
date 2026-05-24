@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -237,6 +238,115 @@ func (r *AlertsRepo) GetByID(ctx context.Context, id uuid.UUID) (models.Alert, e
 	return alert, nil
 }
 
+func (r *AlertsRepo) Acknowledge(ctx context.Context, q Queryer, id uuid.UUID, userID uuid.UUID, now time.Time) (models.Alert, error) {
+	return updateAlert(ctx, q, `
+		UPDATE alerts
+		SET
+			status = 'acknowledged',
+			acknowledged_by = $2,
+			acknowledged_at = $3
+		WHERE id = $1
+			AND status IN ('triggered', 'escalated')
+		RETURNING
+			id,
+			title,
+			service_name,
+			environment,
+			severity,
+			status,
+			source,
+			summary,
+			metric_name,
+			threshold,
+			current_value,
+			affected_customers,
+			runbook_url,
+			dashboard_url,
+			logs_url,
+			triggered_at,
+			acknowledged_at,
+			acknowledged_by,
+			resolved_at,
+			linked_incident_id,
+			created_at
+	`, id, userID, now)
+}
+
+func (r *AlertsRepo) Resolve(ctx context.Context, q Queryer, id uuid.UUID, now time.Time) (models.Alert, error) {
+	return updateAlert(ctx, q, `
+		UPDATE alerts
+		SET
+			status = 'resolved',
+			resolved_at = $2
+		WHERE id = $1
+			AND status IN ('triggered', 'escalated', 'acknowledged')
+		RETURNING
+			id,
+			title,
+			service_name,
+			environment,
+			severity,
+			status,
+			source,
+			summary,
+			metric_name,
+			threshold,
+			current_value,
+			affected_customers,
+			runbook_url,
+			dashboard_url,
+			logs_url,
+			triggered_at,
+			acknowledged_at,
+			acknowledged_by,
+			resolved_at,
+			linked_incident_id,
+			created_at
+	`, id, now)
+}
+
+func (r *AlertsRepo) Escalate(ctx context.Context, q Queryer, id uuid.UUID) (models.Alert, error) {
+	return updateAlert(ctx, q, `
+		UPDATE alerts
+		SET status = 'escalated'
+		WHERE id = $1
+			AND status = 'triggered'
+		RETURNING
+			id,
+			title,
+			service_name,
+			environment,
+			severity,
+			status,
+			source,
+			summary,
+			metric_name,
+			threshold,
+			current_value,
+			affected_customers,
+			runbook_url,
+			dashboard_url,
+			logs_url,
+			triggered_at,
+			acknowledged_at,
+			acknowledged_by,
+			resolved_at,
+			linked_incident_id,
+			created_at
+	`, id)
+}
+
+func (r *AlertsRepo) CancelPendingEscalations(ctx context.Context, q Queryer, alertID uuid.UUID) error {
+	_, err := q.Exec(ctx, `
+		UPDATE escalation_events
+		SET status = 'cancelled'
+		WHERE alert_id = $1
+			AND status = 'pending'
+	`, alertID)
+
+	return err
+}
+
 func (r *AlertsRepo) CreateEscalationEvent(ctx context.Context, q Queryer, event models.EscalationEvent, userID uuid.UUID) error {
 	_, err := q.Exec(ctx, `
 		INSERT INTO escalation_events (
@@ -258,6 +368,61 @@ func (r *AlertsRepo) CreateEscalationEvent(ctx context.Context, q Queryer, event
 	)
 
 	return err
+}
+
+func (r *AlertsRepo) MarkNextPendingEscalationNotified(ctx context.Context, q Queryer, alertID uuid.UUID) (models.EscalationEvent, error) {
+	var event models.EscalationEvent
+
+	err := q.QueryRow(ctx, `
+		WITH next_event AS (
+			SELECT id
+			FROM escalation_events
+			WHERE alert_id = $1
+				AND status = 'pending'
+			ORDER BY level ASC
+			LIMIT 1
+		)
+		UPDATE escalation_events e
+		SET status = 'notified'
+		FROM next_event
+		JOIN users u ON u.id = (
+			SELECT user_id
+			FROM escalation_events
+			WHERE id = next_event.id
+		)
+		WHERE e.id = next_event.id
+		RETURNING
+			e.id,
+			e.alert_id,
+			e.level,
+			e.notify_at,
+			e.status,
+			e.created_at,
+			u.id,
+			u.name,
+			u.email,
+			u.avatar_url,
+			u.role,
+			u.created_at
+	`, alertID).Scan(
+		&event.ID,
+		&event.AlertID,
+		&event.Level,
+		&event.NotifyAt,
+		&event.Status,
+		&event.CreatedAt,
+		&event.User.ID,
+		&event.User.Name,
+		&event.User.Email,
+		&event.User.AvatarURL,
+		&event.User.Role,
+		&event.User.CreatedAt,
+	)
+	if err != nil {
+		return models.EscalationEvent{}, err
+	}
+
+	return event, nil
 }
 
 func (r *AlertsRepo) ListEscalationEvents(ctx context.Context, alertID uuid.UUID) ([]models.EscalationEvent, error) {
@@ -315,6 +480,39 @@ func (r *AlertsRepo) ListEscalationEvents(ctx context.Context, alertID uuid.UUID
 	}
 
 	return events, nil
+}
+
+func updateAlert(ctx context.Context, q Queryer, sql string, args ...any) (models.Alert, error) {
+	var alert models.Alert
+
+	err := q.QueryRow(ctx, sql, args...).Scan(
+		&alert.ID,
+		&alert.Title,
+		&alert.ServiceName,
+		&alert.Environment,
+		&alert.Severity,
+		&alert.Status,
+		&alert.Source,
+		&alert.Summary,
+		&alert.MetricName,
+		&alert.Threshold,
+		&alert.CurrentValue,
+		&alert.AffectedCustomers,
+		&alert.RunbookURL,
+		&alert.DashboardURL,
+		&alert.LogsURL,
+		&alert.TriggeredAt,
+		&alert.AcknowledgedAt,
+		&alert.AcknowledgedBy,
+		&alert.ResolvedAt,
+		&alert.LinkedIncidentID,
+		&alert.CreatedAt,
+	)
+	if err != nil {
+		return models.Alert{}, err
+	}
+
+	return alert, nil
 }
 
 func scanAlert(row pgx.Row) (models.Alert, error) {

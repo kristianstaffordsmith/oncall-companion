@@ -7,11 +7,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/kristianstaffordsmith/oncall-companion/backend/internal/models"
 	"github.com/kristianstaffordsmith/oncall-companion/backend/internal/repository"
 )
 
-var ErrInvalidAlertInput = errors.New("invalid alert input")
+var (
+	ErrInvalidAlertInput      = errors.New("invalid alert input")
+	ErrAlertNotFound          = errors.New("alert not found")
+	ErrInvalidAlertTransition = errors.New("invalid alert state transition")
+	ErrNoPendingEscalation    = errors.New("no pending escalation")
+)
 
 type AlertService struct {
 	alertsRepo      *repository.AlertsRepo
@@ -121,6 +127,112 @@ func (s *AlertService) GetDetail(ctx context.Context, id uuid.UUID) (models.Aler
 	}, nil
 }
 
+func (s *AlertService) Acknowledge(ctx context.Context, id uuid.UUID) (models.Alert, error) {
+	tx, err := s.alertsRepo.Begin(ctx)
+	if err != nil {
+		return models.Alert{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	alert, err := s.alertsRepo.GetByID(ctx, id)
+	if err != nil {
+		return models.Alert{}, mapAlertLookupError(err)
+	}
+
+	if alert.Status != "triggered" && alert.Status != "escalated" {
+		return models.Alert{}, ErrInvalidAlertTransition
+	}
+
+	userID, err := uuid.Parse(repository.DemoUserID)
+	if err != nil {
+		return models.Alert{}, err
+	}
+
+	updated, err := s.alertsRepo.Acknowledge(ctx, tx, id, userID, time.Now().UTC())
+	if err != nil {
+		return models.Alert{}, err
+	}
+
+	if err := s.alertsRepo.CancelPendingEscalations(ctx, tx, id); err != nil {
+		return models.Alert{}, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return models.Alert{}, err
+	}
+
+	return updated, nil
+}
+
+func (s *AlertService) Resolve(ctx context.Context, id uuid.UUID) (models.Alert, error) {
+	tx, err := s.alertsRepo.Begin(ctx)
+	if err != nil {
+		return models.Alert{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	alert, err := s.alertsRepo.GetByID(ctx, id)
+	if err != nil {
+		return models.Alert{}, mapAlertLookupError(err)
+	}
+
+	if alert.Status != "triggered" && alert.Status != "escalated" && alert.Status != "acknowledged" {
+		return models.Alert{}, ErrInvalidAlertTransition
+	}
+
+	updated, err := s.alertsRepo.Resolve(ctx, tx, id, time.Now().UTC())
+	if err != nil {
+		return models.Alert{}, err
+	}
+
+	if err := s.alertsRepo.CancelPendingEscalations(ctx, tx, id); err != nil {
+		return models.Alert{}, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return models.Alert{}, err
+	}
+
+	return updated, nil
+}
+
+func (s *AlertService) Escalate(ctx context.Context, id uuid.UUID) (models.Alert, error) {
+	tx, err := s.alertsRepo.Begin(ctx)
+	if err != nil {
+		return models.Alert{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	alert, err := s.alertsRepo.GetByID(ctx, id)
+	if err != nil {
+		return models.Alert{}, mapAlertLookupError(err)
+	}
+
+	if alert.Status != "triggered" {
+		return models.Alert{}, ErrInvalidAlertTransition
+	}
+
+	updated, err := s.alertsRepo.Escalate(ctx, tx, id)
+	if err != nil {
+		return models.Alert{}, err
+	}
+
+	nextEscalation, err := s.alertsRepo.MarkNextPendingEscalationNotified(ctx, tx, id)
+	if err != nil {
+		return models.Alert{}, mapPendingEscalationError(err)
+	}
+
+	if err := s.notificationSvc.CreateEscalationNotification(ctx, tx, nextEscalation.User.ID, updated); err != nil {
+		return models.Alert{}, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return models.Alert{}, err
+	}
+
+	return updated, nil
+}
+
 func (input CreateAlertInput) Valid() bool {
 	if strings.TrimSpace(input.Title) == "" {
 		return false
@@ -148,4 +260,20 @@ func (input CreateAlertInput) Valid() bool {
 	default:
 		return false
 	}
+}
+
+func mapAlertLookupError(err error) error {
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrAlertNotFound
+	}
+
+	return err
+}
+
+func mapPendingEscalationError(err error) error {
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrNoPendingEscalation
+	}
+
+	return err
 }

@@ -51,6 +51,14 @@ make test-alert
 curl http://localhost:8080/alerts
 ```
 
+Act on an alert by passing the returned alert ID:
+
+```bash
+make acknowledge-alert ALERT_ID=<alert-id>
+make resolve-alert ALERT_ID=<alert-id>
+make escalate-alert ALERT_ID=<alert-id>
+```
+
 To reset the local database and rerun migrations:
 
 ```bash

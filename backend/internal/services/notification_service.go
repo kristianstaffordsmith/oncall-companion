@@ -34,3 +34,21 @@ func (s *NotificationService) CreateAlertNotification(
 
 	return err
 }
+
+func (s *NotificationService) CreateEscalationNotification(
+	ctx context.Context,
+	q repository.Queryer,
+	userID uuid.UUID,
+	alert models.Alert,
+) error {
+	_, err := s.notificationsRepo.Create(ctx, q, models.NotificationEvent{
+		ID:      uuid.New(),
+		UserID:  userID,
+		AlertID: &alert.ID,
+		Title:   "Alert escalated",
+		Body:    fmt.Sprintf("%s alert for %s needs backup: %s", alert.Severity, alert.ServiceName, alert.Title),
+		Status:  "unread",
+	})
+
+	return err
+}
