@@ -1,17 +1,24 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { queryClient } from '@/api/queryClient';
-import { NotificationProvider } from '@/features/notifications/NotificationProvider';
+import { DemoSplashOverlay } from '@/components/DemoSplashOverlay';
+import { AppToastProvider } from '@/features/notifications/AppToastProvider';
 import { colors, fontFamily } from '@/theme';
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Native splash does not show custom assets in Expo Go — hide it so the overlay takes over.
+    void SplashScreen.hideAsync();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <NotificationProvider>
+        <AppToastProvider>
           <StatusBar style="light" />
           <Stack
             screenOptions={{
@@ -27,7 +34,8 @@ export default function RootLayout() {
             <Stack.Screen name="incidents/index" options={{ headerShown: false }} />
             <Stack.Screen name="incidents/[id]" options={{ headerShown: false }} />
           </Stack>
-        </NotificationProvider>
+          <DemoSplashOverlay />
+        </AppToastProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

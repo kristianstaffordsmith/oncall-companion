@@ -4,11 +4,13 @@ import { AppText } from '@/components/AppText';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { SectionCard } from '@/components/SectionCard';
 import { useTriggerTestAlert } from '@/features/alerts/hooks';
+import { useAppToast } from '@/features/notifications/AppToastProvider';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
 export function TriggerTestAlertButton() {
   const triggerTestAlert = useTriggerTestAlert();
+  const { showToast } = useAppToast();
 
   return (
     <View style={styles.wrap}>
@@ -19,7 +21,16 @@ export function TriggerTestAlertButton() {
         <PrimaryButton
           label="Trigger test alert"
           loading={triggerTestAlert.isPending}
-          onPress={() => triggerTestAlert.mutate()}
+          onPress={() =>
+            triggerTestAlert.mutate(undefined, {
+              onSuccess: () => {
+                showToast({
+                  title: 'Test alert triggered',
+                  body: 'Sample monitoring webhook sent.',
+                });
+              },
+            })
+          }
         />
         {triggerTestAlert.isError ? (
           <AppText variant="caption" style={styles.error}>

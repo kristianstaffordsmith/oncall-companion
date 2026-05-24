@@ -13,7 +13,7 @@ type Props = {
 
 export function CurrentShiftCard({ shift }: Props) {
   return (
-    <View style={getCardStyle('hero')}>
+    <View style={[getCardStyle('hero'), styles.card]}>
       <View style={cardStyles.insetHighlight} pointerEvents="none" />
       <AppText variant="label" style={styles.eyebrow}>
         You're on call
@@ -34,6 +34,11 @@ export function CurrentShiftCard({ shift }: Props) {
 }
 
 const styles = StyleSheet.create({
+  card: {
+    backgroundColor: colors.surfaceOnCall,
+    borderColor: colors.borderOnCall,
+    borderWidth: 1,
+  },
   eyebrow: {
     color: colors.low,
     fontSize: 13,
