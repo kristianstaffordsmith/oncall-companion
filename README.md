@@ -28,17 +28,28 @@ Webhook
 
 ## Running locally
 
-The repo is being built in phases. The local commands are already sketched out in the root `Makefile`, but not every command is runnable until the matching backend and mobile phases land.
+The repo is being built in phases. The backend health endpoint is the first runnable slice.
 
-Planned commands:
+Run the API locally:
+
+```bash
+cd backend
+go run ./cmd/api
+```
+
+Check the health endpoint:
+
+```bash
+curl http://localhost:8080/health
+```
+
+Or run it with Docker Compose:
 
 ```bash
 make dev
-make api
-make mobile
-make generate-client
-make test-alert
 ```
+
+Planned commands such as `make mobile`, `make generate-client`, and `make test-alert` become active in later phases.
 
 ## Product tradeoffs
 
